@@ -27,9 +27,6 @@ public abstract class Shape {
 	public Shape(Vector [] SHAPE_POINTS) {
 		this(SHAPE_POINTS,constructCentroid(SHAPE_POINTS));
 	}
-	public Vector[] getAbsolutePoints() {
-		return this.POINTS;
-	}
 	public Vector [] getPoints() {
 		return this.vertexList;
 	}
@@ -96,8 +93,8 @@ public abstract class Shape {
 			if(POINTS[i].y < minY)minY = POINTS[i].y;
 			if(POINTS[i].y > maxY)maxY = POINTS[i].y;
 		}
-		double centerX = (maxX - minX)/2;
-		double centerY = (maxY - minY)/2;
+		double centerX = minX + (maxX - minX)/2;
+		double centerY = minY + (maxY - minY)/2;
 		Vector centroid = new Vector(centerX,centerY);
 		return centroid;
 	}

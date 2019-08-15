@@ -12,105 +12,101 @@ import geometry.Vector;
 
 public class Rock extends Projectile {
 	public Polygon drawShape;
+	int numBreaks;
 	public static final int NUM_POINTS = 18;
 	public static final int BASE_RADIUS = 55;
-	
-	private static final double RANGE = 800;
-	private static final double DEBRIS_RANGE = 500;
-	public static final int DEBRIS_SPEED = 8;
-	public static final int BULLET_SPEED = 24;
-	public static final int COLOR_CODE = 0xff5213;
+	private static final double RANGE = 1200;
+	private static final double DEBRIS_RANGE = 800;
+	public static final int BULLET_SPEED = 32;
+	public static final int COLOR_CODE = 0x522208;
 	public static final Color ROCK_COLOR = new Color(COLOR_CODE);
 	public Map map;
-	boolean split;
 	public Rock(Vector location,Vector velocity,double angle) {
 		super(location,null,new RockShape(),RANGE);
-		this.drawHitshape = true;
-		split = true;
+		//this.drawHitshape = true;
 		this.center = new Vector(this.hitShape.centroid);
 		drawShape = ((RockShape)this.hitShape).toPolygon();
 		this.angle = angle;
 		this.velocity = Vector.angleVector(angle,BULLET_SPEED);
 		this.angularVelocity = Math.signum(this.velocity.x)*0.06;
 		this.updateShape();
+		numBreaks = 2;
 	}
-	public Rock(Vector location, double angle,Shape shape) {
-		super(location,null,shape,DEBRIS_RANGE);
-		this.drawHitshape = true;
-		this.center = new Vector(this.hitShape.centroid);
+	public Rock(Vector location,double angle,Shape shape, int numBreaks,double normalLength) {
+		super(location,shape.centroid,shape,DEBRIS_RANGE);
+		//this.drawHitshape = true;
 		drawShape = ((RockShape)this.hitShape).toPolygon();
-		this.angle = angle;
-		this.velocity = Vector.angleVector(angle,DEBRIS_SPEED);
-		this.angularVelocity = Math.signum(this.velocity.x)*0.06;
+		this.velocity = Vector.angleVector(angle,normalLength);
+		this.angularVelocity = Math.signum(angle) * 0.06;
 		this.updateShape();
+		this.numBreaks = numBreaks - 1;
+		System.out.println(this.numBreaks);
 	}
 	public String toString() {
 		return this.hitShape.toString();
 	}
 	public void splitRocks(Map map, Vector normal) {
-		System.out.println("Senior\n" + this);
-		Vector [] newShape;
 		int currentPoint = 0;
+		int newShapePoints = 2 + (int)(Math.random() * 4);
 		int debrisPoint;
-		double debrisAngle;
-		Vector [] points = this.hitShape.getAbsolutePoints();
-		while(currentPoint < points.length) {
-			int shapePoints = 3 + (int)(Math.random() * 4);
-			while(currentPoint + shapePoints < points.length - 5) {
-				debrisPoint = 0;
-				newShape = new Vector[shapePoints + 1];
-				while(shapePoints > 0) {
-					newShape[debrisPoint] = points[currentPoint];
-					debrisPoint++;
-					currentPoint++;
-					shapePoints--;
-				}
-				newShape[debrisPoint] = this.hitShape.centroid;
-				debrisAngle = this.angle + Shape.constructCentroid(newShape).minus(this.hitShape.centroid).angle();
-				Rock newRock = new Rock(location,debrisAngle,new RockShape(newShape));
-				System.out.println("Child\n" + newRock);
-				newRock.velocity.minusEquals(normal);
-				this.map.projectileQueue.add(newRock);
-				shapePoints = 3 + (int)(Math.random() * 4);
-			}
-			shapePoints = points.length - currentPoint;
+		
+		normal = normal.scalarMultiply(0.2);
+		double normalLength = normal.length();
+		
+		Vector[] newArr;
+		Vector[] points = this.hitShape.getPoints();
+		while(currentPoint + newShapePoints < points.length - 2) {
 			debrisPoint = 0;
-			newShape = new Vector[shapePoints + 1];
-			
-			while(shapePoints > 0) {
-				newShape[debrisPoint] = points[currentPoint];
-				debrisPoint++;
+			newArr = new Vector[newShapePoints + 1];
+			while(newShapePoints > 0) {
+				newArr[debrisPoint] = points[currentPoint].minus(this.location);
 				currentPoint++;
-				shapePoints--;
+				debrisPoint++;
+				newShapePoints--;
 			}
-			
-			newShape[debrisPoint] = this.hitShape.centroid;
-			debrisAngle = this.angle + Shape.constructCentroid(newShape).minus(this.hitShape.centroid).angle();
-			
-			Rock newRock = new Rock(location,debrisAngle,new RockShape(newShape));
-			System.out.println("Child\n" + newRock);
+			newArr[debrisPoint] = this.hitShape.centroid;
+			Vector newCenter = Shape.constructCentroid(newArr);
+			double angle = newCenter.minus(this.hitShape.centroid).angle();
+			Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(newArr)),numBreaks,normalLength);
 			newRock.velocity.minusEquals(normal);
 			this.map.projectileQueue.add(newRock);
+			//Make the new rock. 
+			
+			currentPoint--;
+			newShapePoints = 2 + (int)(Math.random() * 4);
 		}
 		
+		debrisPoint = 0;
+		newShapePoints = (points.length - currentPoint);
+		newArr = new Vector[newShapePoints + 2];
+		while(newShapePoints >= 0) {
+			if(newShapePoints == 0)currentPoint = 0;
+			newArr[debrisPoint] = points[currentPoint].minus(location);
+			currentPoint++;
+			debrisPoint++;
+			newShapePoints--;
+		}
+		newArr[debrisPoint] = this.hitShape.centroid;
+		Vector newCenter = Shape.constructCentroid(newArr);
+		double angle = newCenter.minus(this.hitShape.centroid).angle();
+		Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(newArr)),numBreaks,normalLength);
+		newRock.velocity.minusEquals(normal);
+		this.map.projectileQueue.add(newRock);
 	}
 	public boolean hit(CollisionData data,Map map) {
 		super.hit(data,map);
 		Vector normalForce = data.normalForce(this.velocity);
-		if(split) {
+		
+		if(numBreaks > 0) {
 			splitRocks(map,normalForce);
-			return true;
+			this.location.plusEquals(new Vector(0,-200));
 		}
-		else {
-			return false;
-		}
-					
+		return true;	
 	}
 	public boolean updateProjectile(Map map) {
 		if(this.map == null)this.map = map; 
-		boolean removeBullet = super.updateProjectile(this.map);
 		this.velocity.y += Map.GRAVITY;
-		return removeBullet;
+		return super.updateProjectile(map);
 	}
 	public void draw(Graphics2D g,Vector offset) {
 		super.draw(g, offset);
@@ -119,6 +115,7 @@ public class Rock extends Projectile {
 	public void drawObject(Graphics2D g) {
 		g.setColor(ROCK_COLOR);
 		g.fillPolygon(drawShape);
+		//g.drawRect((int)this.center.x-2,(int)this.center.y-2,4,4);
 	}
 	public static class RockShape extends Shape{
 		public RockShape() {
@@ -134,7 +131,17 @@ public class Rock extends Projectile {
 			}
 			return p;
 		}
-	
+		public static Vector [] addMidPoints(Vector[] points) {
+			Vector newPoints [] = new Vector[points.length * 2];
+			for(int i = 0;i < points.length;i++) {
+				newPoints[i*2] = points[i];
+			}
+			for(int i = 1;i < newPoints.length;i += 2) {
+				Vector halfway = newPoints[i+1 != newPoints.length ? i+1:0].minus(newPoints[i-1]).scalarMultiply(0.5);
+				newPoints[i] = newPoints[i-1].add(halfway); 
+			}
+			return newPoints;
+		}
 		public static Vector [] generateShape() {
 			Vector roughCenter = new Vector(BASE_RADIUS,BASE_RADIUS);
 			Vector [] pointList = new Vector [NUM_POINTS];

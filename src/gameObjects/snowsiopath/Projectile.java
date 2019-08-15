@@ -10,6 +10,7 @@ import geometry.Vector;
 public abstract class Projectile extends SolidObject{
 	protected Vector distanceTravelled;
 	private final double RANGE;
+	boolean moving = true;
 	public Projectile(Vector location,Vector center,Shape hitshape,double range) {
 		super(location,center,hitshape);
 		distanceTravelled = new Vector();
@@ -22,10 +23,10 @@ public abstract class Projectile extends SolidObject{
 		return true;
 	}
 	public boolean updateProjectile(Map map) {
-		super.update();
+		if(moving)super.update();
 		
 		boolean deadBullet = false;
-		distanceTravelled.plusEqualsAbs(velocity);
+		if(moving)distanceTravelled.plusEqualsAbs(velocity);
 		if(distanceTravelled.lengthSquared() > RANGE * RANGE) {
 			deadBullet = true;
 		}

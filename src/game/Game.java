@@ -33,7 +33,7 @@ public class Game extends JPanel {
 	private static final Font FPS_FONT = new Font(Font.SERIF,Font.PLAIN,16);
 	/** The current framerate **/
 	private double frameRate;
-	public static final int SCREEN_SIZE_X = 1000;
+	public static final int SCREEN_SIZE_X = 1200;
 	public static final int SCREEN_SIZE_Y = 700;
 	public BufferedImage gameImage;
 	public Graphics2D gameGraphics;
