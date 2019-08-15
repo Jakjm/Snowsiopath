@@ -22,9 +22,7 @@ public class CollisionData {
 	 * @param velocity
 	 * @return
 	 */
-	public Vector NormalForce(Vector velocity) {
-		Vector projection = velocity.projection(this.axis);
-		double scalarValue = projection.computeScalar(this.axis);
-		return this.axis.scalarMultiply(scalarValue);
+	public Vector normalForce(Vector velocity) {
+		return velocity.projection(this.axis);
 	}
 }

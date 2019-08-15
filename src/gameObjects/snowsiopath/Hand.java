@@ -12,25 +12,25 @@ import geometry.Vector;
 
 public class Hand extends Weapon{
 	public static GameSprite sprite = new GameSprite("/sprites/Hand.png");
-	public static final double PUNCH_SPEED = 7;
+	public static final double PUNCH_SPEED = 5;
 	public static final int PUNCH_FRAMES = 8;
 	public int punchFrame;
 	public static final int IDLE = 0;
 	public static final int PUNCHING = 1;
 	public static final int RETURNING = 2;
-	public FlameCluster flames;
+
 	private int state;
 	public Hand(Vector location) {
 		super(location,sprite.getCenter(),new Circle(sprite.getWidth(),8),20);
 		state = IDLE;
-		flames = new FlameCluster(this.location.add(this.center));
 	}
 	@Override
-	public void fire(Vector velocity) {
+	public void fire(Vector velocity, Map map) {
 	    if(state != IDLE) {
 	    	return;
 	    }
 	    else {
+	    	System.out.println("punching");
 	    	state = PUNCHING;
 	    	if(facingRight) {
 	    		this.velocity.x = PUNCH_SPEED;
@@ -41,12 +41,14 @@ public class Hand extends Weapon{
 	    }
 	}
 	public void resetPunch() {
+		this.location = new Vector(relativeLocation);
 		this.velocity.x = 0;
 		state = IDLE;
 	}
 	public void updatePunch() {
 		if(state != IDLE) {
 			punchFrame++;
+			this.location.x += this.velocity.x;
 			if(punchFrame >= PUNCH_FRAMES) {
 				punchFrame = 0;
 				if(state == PUNCHING) {
@@ -59,10 +61,10 @@ public class Hand extends Weapon{
 			}
 		}
 	}
-	public void update(Map map,Vector location,boolean facingRight) {
-		super.update(map,location,facingRight);
-		flames.update(location.add(center),Vector.ZERO());
+	public boolean update(Map map,Vector location,boolean facingRight) {
+		boolean touchingWall = super.update(map,location,facingRight);
 		updatePunch();
+		return touchingWall;
 	}
 	public void interfaceDraw(Graphics2D g) {
 		super.interfaceDraw(g);
@@ -73,7 +75,6 @@ public class Hand extends Weapon{
 	}
 	public void draw(Graphics2D g,Vector offset) {
 		super.draw(g, offset);
-		flames.draw(g, offset);
 	}
 	@Override
 	public void drawRight(Graphics2D g) {

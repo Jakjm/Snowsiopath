@@ -3,6 +3,7 @@ import java.awt.Color;
 
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * Shape class for the outlines of all shapes within the game.
@@ -25,6 +26,9 @@ public abstract class Shape {
 	 */
 	public Shape(Vector [] SHAPE_POINTS) {
 		this(SHAPE_POINTS,constructCentroid(SHAPE_POINTS));
+	}
+	public Vector[] getAbsolutePoints() {
+		return this.POINTS;
 	}
 	public Vector [] getPoints() {
 		return this.vertexList;
@@ -66,8 +70,11 @@ public abstract class Shape {
 			//Creating the vector of the newly adjusted point.
 			//The new X and Y get us the location of the point
 			Vector newPoint = new Vector(newX,newY); 
-			newPoint.plusEquals(centroid);
+			
+			//The center and location get us the point relative to the location.
 			newPoint.plusEquals(location);
+			newPoint.plusEquals(centroid);
+			
 			vertexList[i] = newPoint;
 		}
 		this.updateAxes();
@@ -76,13 +83,13 @@ public abstract class Shape {
 	/**
 	 * Constructs the centroid point of the shape.
 	 */
-	private static Vector constructCentroid(Vector [] POINTS) {
+	public static Vector constructCentroid(Vector [] POINTS) {
 		//Getting the max and minimum y distances of the points
 		double maxX = Double.NEGATIVE_INFINITY;
 		double maxY = Double.NEGATIVE_INFINITY;
 		double minX = Double.POSITIVE_INFINITY;
 		double minY = Double.POSITIVE_INFINITY;
-
+		
 		for(int i = 0;i < POINTS.length;i++) {
 			if(POINTS[i].x > maxX)maxX = POINTS[i].x;
 			if(POINTS[i].x < minX)minX = POINTS[i].x;
@@ -94,18 +101,38 @@ public abstract class Shape {
 		Vector centroid = new Vector(centerX,centerY);
 		return centroid;
 	}
-	
+	/**
+	 * Check for collision without generating collision data. 
+	 * @param otherShape - the shape we may have collided with.
+	 * @return whether we have collided with the other shape or not.
+	 */
+	public boolean checkCollision(Shape otherShape) {
+		checkAxes.addAll(otherShape.checkAxes);
+		for(Vector axis : checkAxes) {
+			Projection thisP = new Projection(this,axis);
+			Projection otherP = new Projection(otherShape,axis);
+			
+			double maxOverMin = thisP.max - otherP.min;
+			double minUnderMax = thisP.min - otherP.max;
+			if(maxOverMin <= 0 || minUnderMax >= 0) {
+				return false;
+			}
+		}
+		return true;
+	}
 	//Performs a seperating axis theorem collision check on the shape. 
-	public CollisionData sat(Shape otherShape) {
+	public CollisionData checkCollisionData(Shape otherShape) {
 		double leastOverlap = Double.POSITIVE_INFINITY;
 		Vector leastOverlapAxis = null;
 		Vector collisionPoint = null;
 		
 		//Getting the axes we have to check for our shape, and the other shape.
-		checkAxes.addAll(otherShape.checkAxes);
-		//Eliminate perpendicular axes here?
+		LinkedList<Vector> axes = new LinkedList<Vector>();
+		axes.addAll(checkAxes);
+		axes.addAll(otherShape.checkAxes);
 		
-		for(Vector axis : checkAxes) {
+		//Eliminate perpendicular axes here?
+		for(Vector axis : axes) {
 			Projection thisP = new Projection(this,axis);
 			Projection otherP = new Projection(otherShape,axis);
 			
@@ -150,7 +177,7 @@ public abstract class Shape {
 			 */
 			boolean haveParallel = false;
 			for(Vector v : checkAxes) {
-				if(v.sameDirection(newAxis) || v.negative().sameDirection(newAxis)) {
+				if(v.sameDirection(newAxis,0.005) || v.negative().sameDirection(newAxis,0.005)) {
 					haveParallel = true;
 					break;
 				}
@@ -161,7 +188,14 @@ public abstract class Shape {
 			checkAxes.add(newAxis); //Adds the perpendicular vector to our list of axes to check.
 		}
 	}
-	
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		str.append(String.format("Shape: %d points, Center: %s\n",this.vertexList.length, this.centroid));
+		for(int i = 0;i < POINTS.length;i++) {
+			str.append(String.format("%s\n",POINTS[i]));
+		}
+		return str.toString();
+	}
 	/**
 	 * Draws the points of the shape.
 	 * @param g
@@ -177,7 +211,7 @@ public abstract class Shape {
 	}
 	/**
 	 * Class for the projection of A SHAPE, not just a single point, onto an axis.
-	 * Gets the maximum and minimum values for the shape.
+	 * Gets the maximum and minimum values for the shape along the line, as if the shape is casting a shadow. 
 	 * @author jordan
 	 * @version April 4th
 	 */
@@ -192,16 +226,15 @@ public abstract class Shape {
 		/**
 		 * Projects the shape onto the given axis.
 		 * Finds the maximum and minimum point of this shape along the axis.
-		 * @param shape
-		 * @param axis
+		 * @param shape - the shape to be projected onto the axis.
+		 * @param axis - the axis to project along.
 		 */
 		public void projectShape(Shape shape,Vector axis) {
 			this.max = Double.NEGATIVE_INFINITY;
 			this.min = Double.POSITIVE_INFINITY;
 			for(Vector vertex : shape.vertexList) {
-				//Projects a point from the shape onto the axis, then checks if it is greater or less than our min and max.
-				Vector projectedPoint = vertex.projection(axis);
-				double value = projectedPoint.computeScalar(axis);
+				//Projecting a point onto the axis and seeing whether it is a max or min point along the axis.
+				double value = vertex.projectionScalar(axis);
 				if(value > max) {
 					max = value;
 					maxPoint = vertex;

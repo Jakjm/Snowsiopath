@@ -1,5 +1,6 @@
 package gameObjects.snowsiopath;
 
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import game.KeyHandler;
@@ -22,7 +23,7 @@ public class Player extends ReversibleObject{
 	public static final double MAX_SPEED = 4.5;
 	public static final double JUMP_STRENGTH = 13;
 	public boolean onGround = false;
-    public static final Vector SHOULDER_RIGHT = new Vector(30,40);
+    public static final Vector SHOULDER_RIGHT = new Vector(40,40);
     public static final Vector SHOULDER_LEFT = new Vector(28,40);
     public static final double ARM_LENGTH = 30;
     public double weaponAngle = 0;
@@ -49,13 +50,13 @@ public class Player extends ReversibleObject{
 		Portion [] pieces = new Portion [] {faceRight,middleRight,bottomRight,bottomLeft,middleLeft,faceLeft};
 		return new ComboShape(pieces,sprite.getCenter());
 	}
-	public void getKeys(KeyHandler keys) {
-		if(keys.rightKey) {
+	public void getKeys(KeyHandler keys, Map map) {
+		if(keys.rightKey || keys.dKey) {
 			facingRight = true;
 			velocity.x += MOVE_ACCEL;
 			if(velocity.x > MAX_SPEED)velocity.x = MAX_SPEED;
 		}
-		else if(keys.leftKey) {
+		else if(keys.leftKey || keys.aKey) {
 			facingRight = false;
 			velocity.x -= MOVE_ACCEL;
 			if(velocity.x < -MAX_SPEED)velocity.x =- MAX_SPEED;
@@ -75,7 +76,7 @@ public class Player extends ReversibleObject{
 			}
 		}
 		if(keys.fKey) {
-			weapon.shoot(this.velocity);
+			weapon.shoot(this.velocity,map);
 		}
 	}
 	public void jump() {
@@ -110,13 +111,12 @@ public class Player extends ReversibleObject{
     		}
     		else {
     			//Updating the location and velocity of the player using the overlap and normal force.
-    			this.location = this.location.minus(data.axis.scalarMultiply(data.overlap));
-    			Vector normalForce = data.NormalForce(this.velocity);
-    			this.velocity = this.velocity.minus(normalForce);
+    			this.subtractOverlap(data);
+    			
     			//If not already on ground, check if data suggests that we're on the ground.
     			if(!this.onGround) {
     				//On ground is when the vertical normal force is greater than the horizontal.
-    				this.onGround = normalForce.y / Math.abs(normalForce.x) > 1;
+    				this.onGround = applyNormalForce2(data);
     			}
     			super.updateShape();
     		}
@@ -125,6 +125,7 @@ public class Player extends ReversibleObject{
 	public void updateWeapon(Map map) {
 		if(facingRight) {
     		if(this.weapon instanceof Hand) {
+    			this.weapon.setEnabled(true);
     			this.weapon.update(map,location.add(SHOULDER_RIGHT),facingRight);
     		}
     		else {
@@ -143,6 +144,7 @@ public class Player extends ReversibleObject{
     	}
     	else {
     		if(this.weapon instanceof Hand) {
+    			this.weapon.setEnabled(true);
     			this.weapon.update(map,location.add(SHOULDER_LEFT),facingRight);
     		}
     		else {
@@ -161,7 +163,7 @@ public class Player extends ReversibleObject{
     	}
 	}
     public void update(Map map) {
-    	this.velocity.y += Map.GRAVITY;
+    	if(!this.onGround)this.velocity.y += Map.GRAVITY;
     	this.angle %= 2*Math.PI;
     	super.update();
     	super.updateShape();

@@ -20,6 +20,7 @@ public class Vector {
 	 * Constructs a unit vector at the given angle. 
 	 * Uses the Math cos and sine functions for x and y respectively.
 	 * @param angle - the angle at which the vector should be facing.
+	 * Angle is in radians - so convert if using degrees.
 	 */
 	public Vector(double angle) {
 		this.x = Math.cos(angle);
@@ -89,6 +90,10 @@ public class Vector {
 		this.x *= scalar;
 		this.y *= scalar;
 	}
+	
+	public double projectionScalar(Vector b) {
+		return this.dotProduct(b) / b.lengthSquared();
+	}
 	/**
 	 * Computes the projection of THIS VECTOR onto vector b.
 	 * Does not modify this vector or b.
@@ -116,9 +121,21 @@ public class Vector {
 	public static Vector ZERO() {
 		return new Vector();
 	}
+	/**
+	 * Returns a vector at the given angle, in radians.
+	 * The returned vector is a unit vector; its length will be 1.
+	 * @param angle - the direction angle for the Vector.
+	 * @return the unit vector at this angle. 
+	 */
 	public static Vector angleVector(double angle) {
 		return new Vector(angle);
 	}
+	/**
+	 * Returns a vector at the given angle, in radians.
+	 * The returned vector is a unit vector; its length will be 1.
+	 * @param angle - the direction angle for the Vector.
+	 * @return the unit vector at this angle. 
+	 */
 	public static Vector angleVector(double angle,double length) {
 		Vector newVector = new Vector(angle);
 		newVector.timesEquals(length);
@@ -145,6 +162,10 @@ public class Vector {
 	public double dotProduct(Vector b) {
 		return (this.x * b.x + this.y * b.y);
 	}
+	public void setTo(Vector b) {
+		this.x = b.x;
+		this.y = b.y;
+	}
 	/**
 	 * Constructs a new vector equal to this vector plus another vector.
 	 * The vectors used to construct the new one are NOT modified.
@@ -158,6 +179,10 @@ public class Vector {
 		this.x += b.x;
 		this.y += b.y;
 	}
+	public void plusEqualsAbs(Vector b) {
+		this.x += Math.abs(b.x);
+		this.y += Math.abs(b.y);
+	}
 	/**
 	 * Constructs a new vector equal to this vector minus another vector.
 	 * The vectors used to construct the vector returned are not modified.
@@ -170,8 +195,7 @@ public class Vector {
 		this.x -= b.x;
 		this.y -= b.y;
 	}
-	public boolean sameDirection(Vector other) {
-		double tolerance = 5e-3;
+	public boolean sameDirection(Vector other, double tolerance) {
 		if(Math.abs(this.x - other.x) < tolerance && Math.abs(this.y - other.y) < tolerance) {
 			return true;
 		}

@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.util.LinkedList;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -15,6 +16,7 @@ import gameObjects.Map;
 import gameObjects.MapOne;
 import gameObjects.Wall;
 import gameObjects.snowsiopath.Player;
+import gameObjects.snowsiopath.Projectile;
 import geometry.Vector;
 
 public class Game extends JPanel {
@@ -35,6 +37,8 @@ public class Game extends JPanel {
 	public static final int SCREEN_SIZE_Y = 700;
 	public BufferedImage gameImage;
 	public Graphics2D gameGraphics;
+	public volatile boolean drawComplete = true;
+	
 	public static void main(String [] args) throws InterruptedException {
 		new Game();
 	}
@@ -96,23 +100,29 @@ public class Game extends JPanel {
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 	}
 	public void updateGame() {
-		player.getKeys(keyHandler);
+		player.getKeys(keyHandler,map);
 		player.update(map);
+		map.updateProjectiles();
 		drawGame();
 	}
 	public void drawGame() {
+		drawComplete = false;
 		updateOffset();
 		gameGraphics.setColor(Color.white);
 		gameGraphics.fillRect(0, 0,SCREEN_SIZE_X,SCREEN_SIZE_Y);
-		player.draw(gameGraphics,offset);
 		for(Wall w : map.wallList) {
 			w.draw(gameGraphics,offset);
 		}
+		for(Projectile p : map.bulletList) {
+			p.draw(gameGraphics,offset);
+		}
+		player.draw(gameGraphics,offset);
+		
 		drawFps(gameGraphics);
+		drawComplete = true;
 	}
 	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		g.drawImage(gameImage,0,0,null);
+		if(drawComplete)g.drawImage(gameImage,0,0,null);
 	}
 	public class KeyManager extends KeyHandler {
 		public void onWKeyPressed() {

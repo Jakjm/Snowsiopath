@@ -12,18 +12,23 @@ import geometry.Vector;
 public class Wand extends ProjectileLauncher<Rock>{
     public static GameSprite sprite = new GameSprite("/sprites/Wand.png");
     public static final double LIGHTNING_LENGTH = 30;
-    public static final Vector fireRight = new Vector(sprite.getWidth(),-25);
-    public static final Vector fireLeft = new Vector(-sprite.getWidth()-25,-25);
+    public static final Vector fireRight = new Vector(sprite.getWidth(),- Rock.BASE_RADIUS);
+    public static final Vector fireLeft = new Vector(-2 * Rock.BASE_RADIUS,-Rock.BASE_RADIUS);
     public static final Color manaColor = new Color(0x6666ff);
 	public Wand(Vector location) {
 		super(location, sprite.getCenter(),new Box(sprite.getWidth(),sprite.getHeight()),20,5,120);
 	}
-	public void update(Map map,Vector location,boolean facingRight) {
-		super.update(map,location,facingRight);
+	public boolean update(Map map,Vector location,boolean facingRight) {
+		boolean touchingWall = super.update(map,location,facingRight);
 		if(Math.abs(angle) >= 0.0005) {
 			angle -= Math.signum(angle)*(Math.PI / 32);
 		}
 		else angle = 0;
+		if(!touchingWall) {
+			this.location.setTo(this.relativeLocation);
+			this.updateShape();
+		}
+		return touchingWall; 
 	}
 	public void interfaceDraw(Graphics2D g) {
 		super.interfaceDraw(g);
@@ -34,18 +39,20 @@ public class Wand extends ProjectileLauncher<Rock>{
 		return "Wand";
 	}
 	@Override
-	public void fire(Vector velocity) {
+	public void fire(Vector velocity, Map map) {
 		if(!super.fireBullet()) {
 			return;
 		}
-		if(!facingRight) {
-			this.bulletList.add(new Rock(this.location.add(fireLeft),velocity,Math.PI));
-			this.angle += Math.PI / 4;
-		}
-		else {
-			this.bulletList.add(new Rock(this.location.add(fireRight),velocity,0));
+		Rock rock;
+		if(facingRight) {
+			rock = new Rock(this.location.add(fireRight),velocity,30/16f * Math.PI);	
 			this.angle -= Math.PI / 4;
 		}
+		else {
+			rock = new Rock(this.location.add(fireLeft),velocity,18/16f * Math.PI);
+			this.angle += Math.PI / 4;
+		}
+		map.bulletList.add(rock);
 	}
 	public void drawRight(Graphics2D g) {
 		sprite.draw(g);
@@ -55,4 +62,9 @@ public class Wand extends ProjectileLauncher<Rock>{
     	sprite.drawReverse(g);
     	Hand.sprite.draw(g,18,-5);
     }
+	@Override
+	public Projectile createProjectile(Vector location) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
