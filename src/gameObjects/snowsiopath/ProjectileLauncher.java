@@ -36,6 +36,14 @@ public abstract class ProjectileLauncher <P extends Projectile> extends Weapon{
 		g.setColor(Color.black);
 		g.drawString(String.format("%s %d/%d",extraText,ammo,MAX_AMMO),12,50);
     }
+	public boolean update(Map map,Vector location,boolean facingRight) {
+		boolean touchingWall = super.update(map,location,facingRight);
+		if(!touchingWall) {
+			this.location.setTo(this.relativeLocation);
+			this.updateShape();
+		}
+		return touchingWall;
+	}
 	public abstract Projectile createProjectile(Vector location);
 	public boolean fireBullet() {
 		if(ammo <= 0) {

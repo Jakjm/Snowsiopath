@@ -179,7 +179,7 @@ public class Player extends ReversibleObject{
 	    weapon.draw(g,offset);
 	    weapon.interfaceDraw(g);
     }
-    public void cycleWeapon() {
+    public void cycleWeapon(Map map) {
     	weapon.setEnabled(false);
     	weaponIndex++;
     	if(weaponIndex == weaponList.size()) {
@@ -189,6 +189,7 @@ public class Player extends ReversibleObject{
     	if(!(weapon instanceof Hand)) {
     		weaponAngle = Math.PI / 2;
     	}
+    	this.updateWeapon(map);
     }
 	@Override
 	public void drawRight(Graphics2D g) {

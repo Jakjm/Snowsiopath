@@ -12,11 +12,11 @@ import geometry.Vector;
 public class Wand extends ProjectileLauncher<Rock>{
     public static GameSprite sprite = new GameSprite("/sprites/Wand.png");
     public static final double LIGHTNING_LENGTH = 30;
-    public static final Vector fireRight = new Vector(sprite.getWidth(),- Rock.BASE_RADIUS);
-    public static final Vector fireLeft = new Vector(-2 * Rock.BASE_RADIUS,-Rock.BASE_RADIUS);
+    public static final Vector fireRight = new Vector(sprite.getWidth(),- Rock.BASE_RADIUS - sprite.getHeight());
+    public static final Vector fireLeft = new Vector(-1.6 * Rock.BASE_RADIUS,-Rock.BASE_RADIUS-sprite.getHeight());
     public static final Color manaColor = new Color(0x6666ff);
 	public Wand(Vector location) {
-		super(location, sprite.getCenter(),new Box(sprite.getWidth(),sprite.getHeight()),20,5,120);
+		super(location, sprite.getCenter(),new Box(sprite.getWidth(),sprite.getHeight()),32,20,120);
 	}
 	public boolean update(Map map,Vector location,boolean facingRight) {
 		boolean touchingWall = super.update(map,location,facingRight);
@@ -24,10 +24,6 @@ public class Wand extends ProjectileLauncher<Rock>{
 			angle -= Math.signum(angle)*(Math.PI / 32);
 		}
 		else angle = 0;
-		if(!touchingWall) {
-			this.location.setTo(this.relativeLocation);
-			this.updateShape();
-		}
 		return touchingWall; 
 	}
 	public void interfaceDraw(Graphics2D g) {
@@ -45,14 +41,27 @@ public class Wand extends ProjectileLauncher<Rock>{
 		}
 		Rock rock;
 		if(facingRight) {
-			rock = new Rock(this.location.add(fireRight),velocity,30/16f * Math.PI);	
-			this.angle -= Math.PI / 4;
+			createRockRight(map,velocity,-4 / 32f * Math.PI);
+			createRockRight(map,velocity,-2 / 32f * Math.PI);
+			createRockRight(map,velocity,0);
+			this.angle =- Math.PI / 4;
 		}
 		else {
-			rock = new Rock(this.location.add(fireLeft),velocity,18/16f * Math.PI);
-			this.angle += Math.PI / 4;
+			createRockLeft(map,velocity,36/32f * Math.PI);
+			createRockLeft(map,velocity,Math.PI);
+			createRockLeft(map,velocity,34/32f*Math.PI);
+			this.angle = Math.PI / 4;
 		}
-		map.bulletList.add(rock);
+	}
+	public void createRockRight(Map map, Vector velocity, double angle) {
+		Rock rock;
+		rock = new Rock(this.location.add(fireRight),velocity,angle);
+		map.projectileQueue.add(rock);
+	}
+	public void createRockLeft(Map map, Vector velocity, double angle) {
+		Rock rock;
+		rock = new Rock(this.location.add(fireLeft),velocity,angle);
+		map.projectileQueue.add(rock);
 	}
 	public void drawRight(Graphics2D g) {
 		sprite.draw(g);

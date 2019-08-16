@@ -1,22 +1,29 @@
 package game;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.LinkedList;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-
+import game.backgroundMusic.BackgroundMusic;
 import gameObjects.Map;
 import gameObjects.MapOne;
 import gameObjects.Wall;
+import gameObjects.snowsiopath.Gun;
 import gameObjects.snowsiopath.Player;
 import gameObjects.snowsiopath.Projectile;
+import gameObjects.snowsiopath.Rock;
 import geometry.Vector;
 
 public class Game extends JPanel {
@@ -38,6 +45,13 @@ public class Game extends JPanel {
 	public BufferedImage gameImage;
 	public Graphics2D gameGraphics;
 	public volatile boolean drawComplete = true;
+	BackgroundMusic gameMusic;
+	
+	public JPanel backPanel;
+	public CardLayout panelLayout = new CardLayout();
+	public static final String MENU = "MENU";
+	public static final String LOADING = "LOADING"; 
+	public static final String GAME = "GAME";
 	
 	public static void main(String [] args) throws InterruptedException {
 		new Game();
@@ -46,22 +60,94 @@ public class Game extends JPanel {
 		super();
 		super.setSize(SCREEN_SIZE_X,SCREEN_SIZE_Y);
 		gameFrame = new JFrame("Game");
-		gameFrame.setSize(SCREEN_SIZE_X,SCREEN_SIZE_Y);
+		
 		gameFrame.setResizable(false);
 		gameFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		gameFrame.setVisible(true);
+		
 		gameFrame.setLocation(20, 20);
-		initGame();
+		
+		//Setting up back panel.
+		backPanel = new JPanel();
+		panelLayout = new CardLayout();
+		backPanel.setLayout(panelLayout);
+		backPanel.add(new TitlePanel(),MENU);
+		backPanel.add(this,GAME);
+		backPanel.add(new LoadingPanel(),LOADING);
+		gameFrame.setContentPane(backPanel);
+		switchToMenu();
+		gameFrame.setVisible(true);
+		
+		
+		
 		
 		
 		keyHandler = new KeyManager();
 		gameFrame.addKeyListener(keyHandler);
+
 		
-		gameFrame.setContentPane(this);
+		//gameFrame.setContentPane(this);
 		
-		loop();
+		
+		//initGame();
+		//loop();
+	}
+	public void switchToGame() {
+		gameFrame.setSize(SCREEN_SIZE_X,SCREEN_SIZE_Y);
+		panelLayout.show(backPanel,GAME);
+	}
+	public void switchToMenu() {
+		gameFrame.setSize(400,200);
+		panelLayout.show(backPanel,MENU);
+	}
+	public void switchToLoading() {
+		gameFrame.pack();
+		panelLayout.show(backPanel,LOADING);
+	}
+	public class LoadTask implements Runnable{
+		public void run() {
+			initGame();
+			switchToGame();
+			Thread playThread = new Thread(new PlayTask());
+			playThread.start();
+		}
+	}
+	public class PlayTask implements Runnable{
+		public void run() {
+			loop();
+		}
+	}
+	public class TitlePanel extends JPanel implements ActionListener{
+		public JLabel title = new JLabel("Snowsiopath");
+		public JButton playButton = new JButton("Play");
+		public TitlePanel() {
+			super();
+			title.setFont(new Font(Font.SERIF,Font.BOLD,48));
+			this.setLayout(new BorderLayout());
+			this.add(title,BorderLayout.NORTH);
+			this.add(playButton,BorderLayout.CENTER);
+			playButton.addActionListener(this);
+			playButton.setFocusable(false);
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			switchToLoading();
+			Thread loadThread = new Thread(new LoadTask());
+			loadThread.start();
+		}
+	}
+	public class LoadingPanel extends JPanel{
+		public JLabel label = new JLabel("Loading Game");
+		public LoadingPanel() {
+			super();
+			this.setLayout(new BorderLayout());
+			this.add(label,BorderLayout.NORTH);
+			this.add(new JLabel("Just be patient!"));
+		}
 	}
 	public void initGame() {
+		gameMusic = new BackgroundMusic();
+		Rock.loadRocks();
+		Gun.loadGun();
 		map = new MapOne();
 		player = new Player(new Vector(400,300));
 		offset=new Vector();
@@ -69,8 +155,10 @@ public class Game extends JPanel {
 		gameImage = new BufferedImage(SCREEN_SIZE_X,SCREEN_SIZE_Y,BufferedImage.TYPE_INT_ARGB);
 		gameGraphics = (Graphics2D)gameImage.getGraphics();
 		setRenderingVals(gameGraphics);
+		
 	}
 	public void loop() {
+		gameMusic.play();
 		long lastPaintTime = microseconds();
 		while(true) {
 			long currentTime = microseconds();
@@ -100,10 +188,10 @@ public class Game extends JPanel {
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 	}
 	public void updateGame() {
+		drawGame();
 		player.getKeys(keyHandler,map);
 		player.update(map);
 		map.updateProjectiles();
-		drawGame();
 	}
 	public void drawGame() {
 		drawComplete = false;
@@ -126,7 +214,8 @@ public class Game extends JPanel {
 	}
 	public class KeyManager extends KeyHandler {
 		public void onWKeyPressed() {
-			player.cycleWeapon();
+			player.cycleWeapon(map);
 		}
 	}
+	
 }

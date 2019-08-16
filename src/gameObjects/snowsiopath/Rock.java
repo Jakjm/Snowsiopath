@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 
+import game.MusicPlayer;
+import game.MusicPlayer.BufferedSFX;
 import gameObjects.Map;
 import gameObjects.SolidObject;
 import geometry.CollisionData;
@@ -13,14 +15,25 @@ import geometry.Vector;
 public class Rock extends Projectile {
 	public Polygon drawShape;
 	int numBreaks;
-	public static final int NUM_POINTS = 18;
-	public static final int BASE_RADIUS = 55;
+	public static final int NUM_POINTS = 14;
+	public static final int BASE_RADIUS = 25;
 	private static final double RANGE = 1200;
 	private static final double DEBRIS_RANGE = 800;
 	public static final int BULLET_SPEED = 32;
 	public static final int COLOR_CODE = 0x522208;
 	public static final Color ROCK_COLOR = new Color(COLOR_CODE);
 	public Map map;
+	public static int effectNum = 0;
+	public static BufferedSFX effect;
+	public static void loadRocks() {
+		effect = new BufferedSFX("rockSmash.wav",10);
+	}
+	/**
+	 * Constructor for rock projectiles fired by the magic wand. 
+	 * @param location
+	 * @param velocity
+	 * @param angle
+	 */
 	public Rock(Vector location,Vector velocity,double angle) {
 		super(location,null,new RockShape(),RANGE);
 		//this.drawHitshape = true;
@@ -31,7 +44,17 @@ public class Rock extends Projectile {
 		this.angularVelocity = Math.signum(this.velocity.x)*0.06;
 		this.updateShape();
 		numBreaks = 2;
+		
+		
 	}
+	/**
+	 * Constructor for Rocks in the form of Debris. 
+	 * @param location
+	 * @param angle
+	 * @param shape
+	 * @param numBreaks
+	 * @param normalLength
+	 */
 	public Rock(Vector location,double angle,Shape shape, int numBreaks,double normalLength) {
 		super(location,shape.centroid,shape,DEBRIS_RANGE);
 		//this.drawHitshape = true;
@@ -40,14 +63,21 @@ public class Rock extends Projectile {
 		this.angularVelocity = Math.signum(angle) * 0.06;
 		this.updateShape();
 		this.numBreaks = numBreaks - 1;
-		System.out.println(this.numBreaks);
 	}
 	public String toString() {
 		return this.hitShape.toString();
 	}
+	/**
+	 * Method for disecting rocks into debris. 
+	 * 
+	 * @param map - the map, used for adding the debris rocks to the projectile queue. 
+	 * @param normal - the normal force of collision for the rock that has crashed. 
+	 */
 	public void splitRocks(Map map, Vector normal) {
+		
+		//Declaring variables 
 		int currentPoint = 0;
-		int newShapePoints = 2 + (int)(Math.random() * 4);
+		int newShapePoints = 2 + (int)(Math.random() * 4); //Number of points for the new shape, not including the old shape's center. 
 		int debrisPoint;
 		
 		normal = normal.scalarMultiply(0.2);
@@ -57,6 +87,8 @@ public class Rock extends Projectile {
 		Vector[] points = this.hitShape.getPoints();
 		while(currentPoint + newShapePoints < points.length - 2) {
 			debrisPoint = 0;
+			
+			//Adding the points to our array. 
 			newArr = new Vector[newShapePoints + 1];
 			while(newShapePoints > 0) {
 				newArr[debrisPoint] = points[currentPoint].minus(this.location);
@@ -64,20 +96,25 @@ public class Rock extends Projectile {
 				debrisPoint++;
 				newShapePoints--;
 			}
+			
+			//Creating a rock from the array and adding it to our projectile queue. 
 			newArr[debrisPoint] = this.hitShape.centroid;
 			Vector newCenter = Shape.constructCentroid(newArr);
 			double angle = newCenter.minus(this.hitShape.centroid).angle();
-			Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(newArr)),numBreaks,normalLength);
+			Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(RockShape.addMidPoints(newArr))),numBreaks,normalLength);
 			newRock.velocity.minusEquals(normal);
 			this.map.projectileQueue.add(newRock);
 			//Make the new rock. 
 			
 			currentPoint--;
-			newShapePoints = 2 + (int)(Math.random() * 4);
+			newShapePoints = 2 + (int)(Math.random() * 4); //Generating another random  set of points for the next new shape. 
 		}
 		
+		//Building a rock from the leftover points. 
 		debrisPoint = 0;
 		newShapePoints = (points.length - currentPoint);
+		
+		//Adding the points to our array. 
 		newArr = new Vector[newShapePoints + 2];
 		while(newShapePoints >= 0) {
 			if(newShapePoints == 0)currentPoint = 0;
@@ -86,10 +123,12 @@ public class Rock extends Projectile {
 			debrisPoint++;
 			newShapePoints--;
 		}
+		
+		//Creating a rock from the array and adding it to the queue. 
 		newArr[debrisPoint] = this.hitShape.centroid;
 		Vector newCenter = Shape.constructCentroid(newArr);
 		double angle = newCenter.minus(this.hitShape.centroid).angle();
-		Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(newArr)),numBreaks,normalLength);
+		Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(RockShape.addMidPoints(newArr))),numBreaks,normalLength);
 		newRock.velocity.minusEquals(normal);
 		this.map.projectileQueue.add(newRock);
 	}
@@ -99,7 +138,8 @@ public class Rock extends Projectile {
 		
 		if(numBreaks > 0) {
 			splitRocks(map,normalForce);
-			this.location.plusEquals(new Vector(0,-200));
+			if(numBreaks == 2)effect.play();
+			//this.location.plusEquals(new Vector(0,-200));
 		}
 		return true;	
 	}
@@ -115,7 +155,7 @@ public class Rock extends Projectile {
 	public void drawObject(Graphics2D g) {
 		g.setColor(ROCK_COLOR);
 		g.fillPolygon(drawShape);
-		//g.drawRect((int)this.center.x-2,(int)this.center.y-2,4,4);
+		g.setColor(Color.red);
 	}
 	public static class RockShape extends Shape{
 		public RockShape() {

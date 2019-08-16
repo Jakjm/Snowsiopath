@@ -15,6 +15,7 @@ public abstract class Weapon extends ReversibleObject {
     public static final int INTERFACE_HEIGHT = 60;
     public static final int AMMO_BAR_WIDTH = INTERFACE_WIDTH - 10;
     private boolean enabled = false;
+    private boolean againstWall = false;
     public Vector relativeLocation;
 	public Weapon(Vector location, Vector center, Shape hitShape,int FIRE_DELAY) {
 		super(location, center, hitShape);
@@ -23,7 +24,7 @@ public abstract class Weapon extends ReversibleObject {
 	}
 	public abstract void fire(Vector velocity, Map map);
 	public void shoot(Vector velocity, Map map) {
-		if(!enabled || fireTimer < FIRE_DELAY)return;
+		if(!enabled || fireTimer < FIRE_DELAY || againstWall)return;
 		else {
 			fire(velocity,map);
 			fireTimer = 0;
@@ -48,7 +49,7 @@ public abstract class Weapon extends ReversibleObject {
     	 * Checks for a collision with any walls.
     	 */
     	this.updateShape();
-    	boolean touchingWall = false;
+    	againstWall = false;
     	for(Wall wall : map.wallList) {
     		CollisionData data = this.collisionWith(wall);
     		if(data == null) {
@@ -59,11 +60,11 @@ public abstract class Weapon extends ReversibleObject {
     			this.location = this.location.minus(data.axis.scalarMultiply(data.overlap));
     			Vector normalForce = data.normalForce(this.velocity);
     			this.velocity.x = this.velocity.x - normalForce.x;
-    			touchingWall = true;
+    			againstWall = true;
     		}
     	}
     	this.updateShape();
-    	return touchingWall; 
+    	return againstWall; 
     }
     public void interfaceDraw(Graphics2D g) {
     	g.setColor(Color.black);

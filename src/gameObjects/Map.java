@@ -11,6 +11,7 @@ public abstract class Map {
 	public LinkedList<Projectile> bulletList; 
 	public LinkedList<Projectile> projectileQueue;
 	public static final double GRAVITY = 1;
+	public static final int WALL_THICKNESS = 90;
 	public Map() {
 		wallList = new LinkedList<Wall>();
 		bulletList = new LinkedList<Projectile>();
@@ -18,13 +19,13 @@ public abstract class Map {
 	}
 	public Map(int mapWidth,int mapHeight) {
 		this();
-		Wall leftWall = new Wall(new Vector(0,0),50,mapHeight,Color.BLACK);
+		Wall leftWall = new Wall(new Vector(0,0),WALL_THICKNESS,mapHeight,Color.BLACK);
 		wallList.add(leftWall);
-		Wall bottomWall = new Wall(new Vector(0,mapHeight-50),mapWidth,50,Color.magenta);
+		Wall bottomWall = new Wall(new Vector(0,mapHeight-WALL_THICKNESS),mapWidth,WALL_THICKNESS,Color.magenta);
 		wallList.add(bottomWall);
-		Wall rightWall = new Wall(new Vector(mapWidth,50),50,mapHeight-50,Color.red);
+		Wall rightWall = new Wall(new Vector(mapWidth,WALL_THICKNESS),WALL_THICKNESS,mapHeight-WALL_THICKNESS,Color.red);
 		wallList.add(rightWall);
-		Wall topWall = new Wall(new Vector(50,0),mapWidth,50,Color.green);
+		Wall topWall = new Wall(new Vector(WALL_THICKNESS,0),mapWidth,WALL_THICKNESS,Color.green);
 		wallList.add(topWall);
 	}
 	public void updateProjectiles() {

@@ -70,8 +70,8 @@ public class MusicPlayer{
 	 */
 	public MusicPlayer(String path){
 		try {
-		InputStream stream = new BufferedInputStream(MusicPlayer.class.getResourceAsStream(path));
-		setupMusicPlayer(stream);
+			InputStream stream = new BufferedInputStream(MusicPlayer.class.getResourceAsStream(path));
+			setupMusicPlayer(stream);
 		}
 		catch(Exception e) {
 			System.out.println("Broken for" + path);
@@ -84,7 +84,7 @@ public class MusicPlayer{
 			mode = PLAY_ONCE;
 			
 			try {
-			ais = AudioSystem.getAudioInputStream(stream);
+				ais = AudioSystem.getAudioInputStream(stream);
 			}
 			catch(UnsupportedAudioFileException | IOException e) {
 				e.printStackTrace();
@@ -257,5 +257,26 @@ public class MusicPlayer{
 	 */
 	public String getTrackLength() {
 		return framesToTime(ais.getFrameLength());
+	}
+	
+	/**
+	 * For loading sound effects in advance.
+	 * @author jordan
+	 */
+	public static class BufferedSFX {
+		MusicPlayer [] effects;
+		private int clipNumber;
+		public BufferedSFX(String path,int numClips) {
+			clipNumber = 0;
+			effects = new MusicPlayer[numClips];
+			for(int i = 0;i < effects.length;i++) {
+				effects[i] = new MusicPlayer(path);
+			}
+		}
+		public void play() {
+			effects[clipNumber].play();
+			clipNumber++;
+			if(clipNumber == effects.length)clipNumber = 0;
+		}
 	}
 }
