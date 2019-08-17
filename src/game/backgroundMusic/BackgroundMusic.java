@@ -8,7 +8,7 @@ import game.MusicPlayer;
 public class BackgroundMusic{
 	MusicPlayer player;
 	String path = "backgroundMusic/";
-	String [] setList = new String [] {"Stadium Ruins.wav","Klaww.wav"};
+	String [] setList = new String [] {"Klaww.wav","Stadium Ruins.wav",};
 	int currentTrack;
 	Thread runThread;
 	private volatile boolean playing;
@@ -36,6 +36,7 @@ public class BackgroundMusic{
 					currentTrack++;
 					if(currentTrack == setList.length)currentTrack = 0;
 					player = new MusicPlayer(path + setList[currentTrack]);
+					player.play();
 				}
 			}
 			player.stop();

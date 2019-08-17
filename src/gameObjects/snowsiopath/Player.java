@@ -27,7 +27,9 @@ public class Player extends ReversibleObject{
     public static final Vector SHOULDER_LEFT = new Vector(28,40);
     public static final double ARM_LENGTH = 30;
     public double weaponAngle = 0;
-    public Vector weaponLocation;
+    
+    /**The location of the weapon hand. **/
+    public Vector handLocation;
     public Weapon weapon;
     public ArrayList<Weapon> weaponList;
     public int weaponIndex = 0;
@@ -36,7 +38,7 @@ public class Player extends ReversibleObject{
 		
 		weaponList = new ArrayList<Weapon>();
 		weaponList.add(new Hand(location.add(SHOULDER_RIGHT)));
-		weaponList.add(new Gun(location));
+		weaponList.add(new Shotgun(location));
 		weaponList.add(new Wand(location));
 		weapon = weaponList.get(0);
 	}
@@ -123,12 +125,22 @@ public class Player extends ReversibleObject{
     	}
 	}
 	public void updateWeapon(Map map) {
-		if(facingRight) {
-    		if(this.weapon instanceof Hand) {
-    			this.weapon.setEnabled(true);
-    			this.weapon.update(map,location.add(SHOULDER_RIGHT),facingRight);
-    		}
-    		else {
+		//The hand starts back to allow maximum punching distance.
+		if(this.weapon instanceof Hand) {
+			this.weapon.setEnabled(true);
+			if(facingRight) {
+				this.weapon.update(map,location.add(SHOULDER_RIGHT),facingRight);
+			}
+			else {
+				this.weapon.update(map,location.add(SHOULDER_LEFT),facingRight);
+			}
+		}
+		
+		//Otherwise, for other weapons...
+		else {
+			handLocation = Vector.angleVector(weaponAngle,ARM_LENGTH);
+			handLocation.plusEquals(location);
+			if(facingRight) {
     			if(Math.abs(weaponAngle) < 0.005) {
     				this.weaponAngle = 0;
     				this.weapon.setEnabled(true);
@@ -136,31 +148,20 @@ public class Player extends ReversibleObject{
     			else {
     				this.weaponAngle -= Math.PI / 24;
     			}
-    			weaponLocation = Vector.angleVector(weaponAngle,ARM_LENGTH);
-    			weaponLocation.plusEquals(SHOULDER_RIGHT);
-    			weaponLocation.plusEquals(location);
-    			this.weapon.update(map,weaponLocation,facingRight);
-    		}
-    	}
-    	else {
-    		if(this.weapon instanceof Hand) {
-    			this.weapon.setEnabled(true);
-    			this.weapon.update(map,location.add(SHOULDER_LEFT),facingRight);
-    		}
+    			handLocation.plusEquals(SHOULDER_RIGHT);
+			}
     		else {
     			if(Math.abs(weaponAngle - Math.PI) < 0.005) {
-    				this.weaponAngle = Math.PI;
-    				this.weapon.setEnabled(true);
-    			}
-    			else {
-    				this.weaponAngle += Math.PI / 24;
-    			}
-    			weaponLocation = Vector.angleVector(weaponAngle,ARM_LENGTH);
-    			weaponLocation.plusEquals(SHOULDER_LEFT);
-    			weaponLocation.plusEquals(location);
-    			this.weapon.update(map,weaponLocation,facingRight);
+					this.weaponAngle = Math.PI;
+					this.weapon.setEnabled(true);
+				}
+				else {
+					this.weaponAngle += Math.PI / 24;
+				}
+				handLocation.plusEquals(SHOULDER_LEFT);
     		}
-    	}
+    		this.weapon.update(map,handLocation,facingRight);
+		}
 	}
     public void update(Map map) {
     	if(!this.onGround)this.velocity.y += Map.GRAVITY;

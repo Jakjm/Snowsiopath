@@ -10,7 +10,7 @@ import geometry.Vector;
 public class Bullet extends Projectile{
 	static GameSprite sprite = new GameSprite("/sprites/Bullet.png");
 	public static final double BULLET_SPEED = 16.5;
-	private static final double RANGE = 400;
+	private static final double RANGE = 700;
 	public Bullet(Vector location,Vector velocity,double angle) {
 		super(location,sprite.getCenter(),new Circle(16,8),RANGE);
 		this.velocity = Vector.angleVector(angle,BULLET_SPEED);

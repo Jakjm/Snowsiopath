@@ -20,7 +20,7 @@ import game.backgroundMusic.BackgroundMusic;
 import gameObjects.Map;
 import gameObjects.MapOne;
 import gameObjects.Wall;
-import gameObjects.snowsiopath.Gun;
+import gameObjects.snowsiopath.Shotgun;
 import gameObjects.snowsiopath.Player;
 import gameObjects.snowsiopath.Projectile;
 import gameObjects.snowsiopath.Rock;
@@ -147,7 +147,7 @@ public class Game extends JPanel {
 	public void initGame() {
 		gameMusic = new BackgroundMusic();
 		Rock.loadRocks();
-		Gun.loadGun();
+		Shotgun.loadGun();
 		map = new MapOne();
 		player = new Player(new Vector(400,300));
 		offset=new Vector();

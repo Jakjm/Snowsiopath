@@ -41,7 +41,7 @@ public class Hand extends Weapon{
 	    }
 	}
 	public void resetPunch() {
-		this.location = new Vector(relativeLocation);
+		this.location = new Vector(regularLocation);
 		this.velocity.x = 0;
 		state = IDLE;
 	}

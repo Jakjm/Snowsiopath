@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
+import gameObjects.GameSprite;
 import gameObjects.Map;
 import gameObjects.Weapon;
 import geometry.Shape;
@@ -21,7 +22,14 @@ public abstract class ProjectileLauncher <P extends Projectile> extends Weapon{
 		ammo = MAX_AMMO;
 		this.RELOAD_TIME = RELOAD_TIME;
 	}
-	
+	public Vector holdLocation(GameSprite sprite,GameSprite handSprite,Vector handLocation) {
+		if(!facingRight) {
+			return handLocation.add(new Vector(handSprite.getWidth() - sprite.getWidth(),0));
+		}
+		else {
+			return handLocation;
+		}
+	}
 	public boolean reload() {
 		if(this.ammo == MAX_AMMO || this.fireTimer < 0)return false;
 		this.fireTimer = -RELOAD_TIME;
@@ -39,7 +47,7 @@ public abstract class ProjectileLauncher <P extends Projectile> extends Weapon{
 	public boolean update(Map map,Vector location,boolean facingRight) {
 		boolean touchingWall = super.update(map,location,facingRight);
 		if(!touchingWall) {
-			this.location.setTo(this.relativeLocation);
+			this.location.setTo(this.regularLocation);
 			this.updateShape();
 		}
 		return touchingWall;

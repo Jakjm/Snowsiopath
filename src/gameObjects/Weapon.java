@@ -14,13 +14,18 @@ public abstract class Weapon extends ReversibleObject {
     public static final int INTERFACE_WIDTH = 100;
     public static final int INTERFACE_HEIGHT = 60;
     public static final int AMMO_BAR_WIDTH = INTERFACE_WIDTH - 10;
-    private boolean enabled = false;
+    protected boolean enabled = false;
     private boolean againstWall = false;
-    public Vector relativeLocation;
+    
+    /**The position of the Weapon relative to the hand**/
+    public Vector relativeHandPosition;
+    
+    /**The location of the weapon assuming it isn't touching a wall**/
+    public Vector regularLocation;
 	public Weapon(Vector location, Vector center, Shape hitShape,int FIRE_DELAY) {
 		super(location, center, hitShape);
 		this.FIRE_DELAY = FIRE_DELAY;
-		relativeLocation = new Vector(location);
+		regularLocation = new Vector(location);
 	}
 	public abstract void fire(Vector velocity, Map map);
 	public void shoot(Vector velocity, Map map) {
@@ -42,8 +47,8 @@ public abstract class Weapon extends ReversibleObject {
     public boolean update(Map map,Vector location,boolean facingRight) {
     	super.update();
     	this.facingRight = facingRight;
-    	this.location.plusEquals(location.minus(this.relativeLocation));
-    	this.relativeLocation = location;
+    	this.location.plusEquals(location.minus(this.regularLocation));
+    	this.regularLocation = location;
     	fireTimer++;
     	/*
     	 * Checks for a collision with any walls.

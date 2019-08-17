@@ -20,8 +20,8 @@ public class Rock extends Projectile {
 	private static final double RANGE = 1200;
 	private static final double DEBRIS_RANGE = 800;
 	public static final int BULLET_SPEED = 32;
-	public static final int COLOR_CODE = 0x522208;
-	public static final Color ROCK_COLOR = new Color(COLOR_CODE);
+	public static final int COLOR_CODE = 0xff522208;
+	public static final Color ROCK_COLOR = new Color(COLOR_CODE,true);
 	public Map map;
 	public static int effectNum = 0;
 	public static BufferedSFX effect;
