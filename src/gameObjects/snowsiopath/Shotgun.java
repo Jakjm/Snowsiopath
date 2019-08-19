@@ -24,22 +24,22 @@ public class Shotgun extends ProjectileLauncher<Bullet>{
 	public static final Vector FIRE_LEFT = new Vector (-6,-7);
 	public boolean spinning = false;
 	public int spinCounter = 0;
-	public static final int MAX_AMMO = 1;
-	public static final int RELOAD_TIME = 30;
+	public static final int MAX_AMMO = 6;
+	public static final int FIRE_DELAY = 24;
+	public static final int RELOAD_TIME = 40;
 	public static BufferedSFX fireSound;
-	public static BufferedSFX reloadSound;
+	public static BufferedSFX pumpSound;
 	private int offHandLocation;
 	private int offHandVelocity;
 	public static void loadGun() {
 		fireSound = new BufferedSFX("gunSound.wav",8);
-		reloadSound = new BufferedSFX("reload.wav",3);
+		pumpSound = new BufferedSFX("reload.wav",3);
 	}
 	public Shotgun(Vector location) {
-		super(location,sprite.getCenter(),new Box(sprite.getWidth(),sprite.getHeight()+5),18,MAX_AMMO,RELOAD_TIME);
+		super(location,sprite.getCenter(),new Box(sprite.getWidth(),sprite.getHeight()+5),FIRE_DELAY,MAX_AMMO,RELOAD_TIME);
 	}
 	public boolean reload() {
 		boolean sucessfulReload = super.reload();
-		if(sucessfulReload)reloadSound.play();
 		return sucessfulReload;
 	}
 	@Override
@@ -107,14 +107,17 @@ public class Shotgun extends ProjectileLauncher<Bullet>{
 				this.angle = 0;
 			}
 			else {
-				this.angle -= Math.signum(angle)*Math.PI/32;
+				this.angle -= Math.signum(angle)*Math.PI/64;
 			}
 		}
-		if(fireTimer < -0.8 * RELOAD_TIME) {
-			offHandVelocity = -1;
-		}
-		else if(fireTimer < -0.6 * RELOAD_TIME){
+		if(fireTimer > 0.8 * FIRE_DELAY && fireTimer <= FIRE_DELAY && ammo > 0) {
 			offHandVelocity = 1;
+		}
+		else if(fireTimer > 0.6 * FIRE_DELAY && fireTimer <= FIRE_DELAY && ammo > 0){
+			if(offHandVelocity == 0) {
+				pumpSound.play();
+			}
+			offHandVelocity = -1;
 		}
 		else {
 			offHandVelocity = 0;
@@ -128,14 +131,15 @@ public class Shotgun extends ProjectileLauncher<Bullet>{
 	public void interfaceDraw(Graphics2D g) {
 		super.interfaceDraw(g);
 		sprite.draw(g,10,25);
+		pumpSprite.draw(g,30,28);
 		super.drawAmmoBar(g,"Bullets: ",Color.green);
 	}
 	@Override
 	public void drawRight(Graphics2D g) {
 		sprite.draw(g);
 		Hand.sprite.draw(g,0,2);
+		pumpSprite.draw(g,20+offHandLocation,4);
 		if(this.enabled) {
-			pumpSprite.draw(g,20+offHandLocation,4);
 			Hand.sprite.draw(g,15+offHandLocation,4);
 		}
 	}
@@ -146,8 +150,8 @@ public class Shotgun extends ProjectileLauncher<Bullet>{
 	public void drawLeft(Graphics2D g) {
 		sprite.drawReverse(g);
 		Hand.sprite.draw(g,sprite.getWidth() - Hand.sprite.getWidth(),2);
+		pumpSprite.draw(g,10-offHandLocation,4);
 		if(this.enabled) {
-			pumpSprite.draw(g,10-offHandLocation,4);
 			Hand.sprite.draw(g,5-offHandLocation,4);
 		}
 	}

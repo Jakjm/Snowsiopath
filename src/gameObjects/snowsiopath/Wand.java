@@ -1,8 +1,10 @@
 package gameObjects.snowsiopath;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 
 import gameObjects.GameSprite;
 import gameObjects.Map;
@@ -15,6 +17,7 @@ public class Wand extends ProjectileLauncher<Rock>{
     public static final Vector fireRight = new Vector(sprite.getWidth(),- Rock.BASE_RADIUS - sprite.getHeight());
     public static final Vector fireLeft = new Vector(-sprite.getWidth() + Hand.sprite.getWidth() - 2 * Rock.BASE_RADIUS,-Rock.BASE_RADIUS-sprite.getHeight());
     public static final Color manaColor = new Color(0x6666ff);
+    public int circleSize = 0;
 	public Wand(Vector location) {
 		super(location, sprite.getCenter(),new Box(sprite.getWidth(),sprite.getHeight()),32,20,120);
 	}
@@ -42,10 +45,9 @@ public class Wand extends ProjectileLauncher<Rock>{
 		if(!super.fireBullet()) {
 			return;
 		}
-		createRock(map,velocity,2/8f);
-		createRock(map,velocity,3/8f);
-		createRock(map,velocity,4/8f);
-		createRock(map,velocity,5/8f);
+		for(int i = 2;i <= 5;i++) {
+			createRock(map,velocity,i/32.0 * Math.PI);
+		}
 		if(this.facingRight) {
 			this.angle = -Math.PI / 4;
 		}
@@ -66,6 +68,13 @@ public class Wand extends ProjectileLauncher<Rock>{
 	public void drawRight(Graphics2D g) {
 		sprite.draw(g);
 		Hand.sprite.draw(g,-6,-5);
+	}
+	public void drawSpellcast(Graphics2D g) {
+		Stroke previousStroke = g.getStroke();
+		g.setColor(Color.blue);
+		g.setStroke(new BasicStroke(4));
+		g.drawOval(sprite.getWidth(),-2,10,10);
+		g.setStroke(previousStroke);
 	}
     public void drawLeft(Graphics2D g) {
     	sprite.drawReverse(g);

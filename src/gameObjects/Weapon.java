@@ -25,6 +25,7 @@ public abstract class Weapon extends ReversibleObject {
 	public Weapon(Vector location, Vector center, Shape hitShape,int FIRE_DELAY) {
 		super(location, center, hitShape);
 		this.FIRE_DELAY = FIRE_DELAY;
+		this.fireTimer = FIRE_DELAY;
 		regularLocation = new Vector(location);
 	}
 	public abstract void fire(Vector velocity, Map map);

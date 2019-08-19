@@ -16,7 +16,7 @@ public class Rock extends Projectile {
 	public Polygon drawShape;
 	int numBreaks;
 	public static final int NUM_POINTS = 14;
-	public static final int BASE_RADIUS = 25;
+	public static final int BASE_RADIUS = 45;
 	private static final double RANGE = 1200;
 	private static final double DEBRIS_RANGE = 800;
 	public static final int BULLET_SPEED = 32;
