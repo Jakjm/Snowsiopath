@@ -52,7 +52,6 @@ public abstract class ProjectileLauncher <P extends Projectile> extends Weapon{
 		}
 		return touchingWall;
 	}
-	public abstract Projectile createProjectile(Vector location);
 	public boolean fireBullet() {
 		if(ammo <= 0) {
 			return false;

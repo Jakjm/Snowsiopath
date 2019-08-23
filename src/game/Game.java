@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -100,8 +101,8 @@ public class Game extends JPanel {
 		panelLayout.show(backPanel,MENU);
 	}
 	public void switchToLoading() {
-		gameFrame.pack();
 		panelLayout.show(backPanel,LOADING);
+		gameFrame.pack();
 	}
 	public class LoadTask implements Runnable{
 		public void run() {
@@ -119,33 +120,46 @@ public class Game extends JPanel {
 	public class TitlePanel extends JPanel implements ActionListener{
 		public JLabel title = new JLabel("Snowsiopath");
 		public JButton playButton = new JButton("Play");
+		public JButton controlsButton = new JButton("Controls");
+		public static final int numButtons = 3;
 		public TitlePanel() {
 			super();
-			title.setFont(new Font(Font.SERIF,Font.BOLD,48));
-			this.setLayout(new BorderLayout());
-			this.add(title,BorderLayout.NORTH);
-			this.add(playButton,BorderLayout.CENTER);
+			title.setFont(new Font(Font.SERIF,Font.BOLD,24));
+			this.setLayout(new GridLayout(numButtons,1));
+			this.add(title);
+			title.setHorizontalAlignment(JLabel.CENTER);
+			
+			this.add(controlsButton);
+			controlsButton.addActionListener(this);
+			controlsButton.setFocusable(false);			
+			this.add(playButton);
 			playButton.addActionListener(this);
 			playButton.setFocusable(false);
+			
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			switchToLoading();
-			Thread loadThread = new Thread(new LoadTask());
-			loadThread.start();
+			if(e.getSource() == playButton) {
+				switchToLoading();
+				Thread loadThread = new Thread(new LoadTask());
+				loadThread.start();
+			}
+			else {
+				
+			}
 		}
 	}
 	public class LoadingPanel extends JPanel{
 		public JLabel label = new JLabel("Loading Game");
 		public LoadingPanel() {
 			super();
-			this.setLayout(new BorderLayout());
-			this.add(label,BorderLayout.NORTH);
+			this.setLayout(new GridLayout(2,1));
+			this.add(label);
 			this.add(new JLabel("Just be patient!"));
 		}
 	}
 	public void initGame() {
-		gameMusic = new BackgroundMusic();
+		gameMusic = new BackgroundMusic("Klaww.wav","Stadium Ruins.wav");
 		Rock.loadRocks();
 		Shotgun.loadGun();
 		map = new MapOne();
@@ -174,7 +188,7 @@ public class Game extends JPanel {
 		g.setFont(FPS_FONT);
 		g.setColor(Color.red);
 		String fpsString = String.format("FPS: %.2f",frameRate);
-		g.drawString(fpsString,this.getWidth()-100,this.getHeight() - 40);
+		g.drawString(fpsString,this.getWidth()-90,this.getHeight() - 10);
 	}
 	public static long microseconds() {
 		return System.nanoTime() / 1000;

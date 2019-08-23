@@ -42,20 +42,13 @@ public class Shotgun extends ProjectileLauncher<Bullet>{
 		boolean sucessfulReload = super.reload();
 		return sucessfulReload;
 	}
-	@Override
-	public Projectile createProjectile(Vector location) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	public void fire(Vector velocity, Map map) {
 		if(!fireBullet()) {
 			return;
 		}
-		fireBullet(map,facingRight,velocity,0);
-		fireBullet(map,facingRight,velocity,0.1);
-		fireBullet(map,facingRight,velocity,0.2);
-		fireBullet(map,facingRight,velocity,-0.1);
-		fireBullet(map,facingRight,velocity, -0.2);
+		for(int i = -3;i <= 3;i++) {
+			fireBullet(map,facingRight,velocity,i * 0.1);
+		}
 		fireSound.play();
 		spinGun();
 	}

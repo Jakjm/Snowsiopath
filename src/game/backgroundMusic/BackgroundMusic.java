@@ -7,12 +7,13 @@ import game.MusicPlayer;
  */
 public class BackgroundMusic{
 	MusicPlayer player;
-	String path = "backgroundMusic/";
-	String [] setList = new String [] {"Klaww.wav","Stadium Ruins.wav",};
+	String [] setList;
 	int currentTrack;
 	Thread runThread;
+	
 	private volatile boolean playing;
-	public BackgroundMusic() {
+	public BackgroundMusic(String ... backgroundSounds) {
+		this.setList = backgroundSounds;
 		currentTrack = 0;
 	}
 	public void stop() {
@@ -28,14 +29,14 @@ public class BackgroundMusic{
 	}
 	private class BGMTask implements Runnable{
 		public void run() {
-			if(player == null)player = new MusicPlayer(path + setList[currentTrack]);
+			if(player == null)player = new MusicPlayer(setList[currentTrack]);
 			player.play();
 			while(playing) {
 				//If we should stop, stop playing. 
 				if(!player.isPlaying()) {
 					currentTrack++;
 					if(currentTrack == setList.length)currentTrack = 0;
-					player = new MusicPlayer(path + setList[currentTrack]);
+					player = new MusicPlayer(setList[currentTrack]);
 					player.play();
 				}
 			}

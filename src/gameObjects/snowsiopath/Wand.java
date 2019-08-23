@@ -45,15 +45,12 @@ public class Wand extends ProjectileLauncher<Rock>{
 		if(!super.fireBullet()) {
 			return;
 		}
-		for(int i = 2;i <= 5;i++) {
+		for(int i = 3;i <= 3;i++) {
 			createRock(map,velocity,i/32.0 * Math.PI);
 		}
-		if(this.facingRight) {
-			this.angle = -Math.PI / 4;
-		}
-		else {
-			this.angle = Math.PI / 4;
-		}
+		
+		if(this.facingRight) this.angle = -Math.PI / 4;
+		else this.angle = Math.PI / 4;
 	}
 	public void createRock(Map map,Vector velocity, double angleVariation) {
 		Rock rock;
@@ -80,9 +77,4 @@ public class Wand extends ProjectileLauncher<Rock>{
     	sprite.drawReverse(g);
     	Hand.sprite.draw(g,18,-5);
     }
-	@Override
-	public Projectile createProjectile(Vector location) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

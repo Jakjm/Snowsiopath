@@ -28,6 +28,10 @@ public class Player extends ReversibleObject{
     public static final double ARM_LENGTH = 30;
     public double weaponAngle = 0;
     
+    public double flipStart;
+    public double flipRange;
+    public boolean flipping;
+    
     /**The location of the weapon hand. **/
     public Vector handLocation;
     public Weapon weapon;
@@ -35,7 +39,6 @@ public class Player extends ReversibleObject{
     public int weaponIndex = 0;
 	public Player(Vector location) {
 		super(location,sprite.getCenter(),playerShape());
-		
 		weaponList = new ArrayList<Weapon>();
 		weaponList.add(new Hand(location.add(SHOULDER_RIGHT)));
 		weaponList.add(new Shotgun(location));
@@ -69,8 +72,14 @@ public class Player extends ReversibleObject{
 		else if(keys.eKey) {
 			flip();
 		}
+		else if(keys.xKey) {
+			half();
+		}
 		else if(keys.qKey) {
 			backflip();
+		}
+		else if(keys.zKey) {
+			halfBack();
 		}
 		if(keys.rKey) {
 			if(weapon != null && weapon instanceof ProjectileLauncher) {
@@ -86,6 +95,34 @@ public class Player extends ReversibleObject{
 			return;
 		}
 		velocity.y -= JUMP_STRENGTH;
+		
+		flipping = true;
+	}
+	public void halfBack() {
+		if(!onGround) {
+			return;
+		}
+		velocity.y -= JUMP_STRENGTH;
+		angularVelocity = -0.13;
+		
+		
+		
+		flipping = true;
+		flipRange = Math.PI;
+		flipStart = this.angle;
+	}
+	public void half() {
+		if(!onGround) {
+			return;
+		}
+		velocity.y -= JUMP_STRENGTH;
+		angularVelocity = 0.13;
+		
+		
+		
+		flipping = true;
+		flipRange = Math.PI;
+		flipStart = this.angle;
 	}
 	public void flip() {
 		if(!onGround) {
@@ -93,6 +130,10 @@ public class Player extends ReversibleObject{
 		}
 		velocity.y -= JUMP_STRENGTH*1.25;
 		angularVelocity = 0.2;
+		
+		flipping = true;
+		flipRange = 2 * Math.PI;
+		flipStart = this.angle;
 	}
 	public void backflip() {
 		if(!onGround) {
@@ -100,6 +141,10 @@ public class Player extends ReversibleObject{
 		}
 		velocity.y -= JUMP_STRENGTH*1.25;
 		angularVelocity = -0.2;
+		
+		flipping = true;
+		flipRange = 2 * Math.PI;
+		flipStart = this.angle;
 	}
 	public void updateWalls(Map map) {
 		/*
@@ -165,14 +210,21 @@ public class Player extends ReversibleObject{
 	}
     public void update(Map map) {
     	if(!this.onGround)this.velocity.y += Map.GRAVITY;
-    	this.angle %= 2*Math.PI;
     	super.update();
     	super.updateShape();
     	updateWalls(map);
     	updateWeapon(map);
-    	if(onGround || Math.abs(angle) >= 2*Math.PI) {
-    		this.angle = 0;
-    		this.angularVelocity = 0;
+    	
+    	
+    	if(onGround) {
+	    	if(angle > flipStart + flipRange) {
+	    		angle = flipStart + flipRange;
+	    		angularVelocity = 0;
+	    	}
+	    	else if(angle < flipStart - flipRange) {
+	    		angle = flipStart - flipRange;
+	    		angularVelocity = 0;
+	    	}
     	}
     }
     public void draw(Graphics2D g,Vector offset) {

@@ -16,7 +16,7 @@ public class Rock extends Projectile {
 	public Polygon drawShape;
 	int numBreaks;
 	public static final int NUM_POINTS = 14;
-	public static final int BASE_RADIUS = 45;
+	public static final int BASE_RADIUS = 65;
 	private static final double RANGE = 1200;
 	private static final double DEBRIS_RANGE = 800;
 	public static final int BULLET_SPEED = 32;
@@ -41,6 +41,7 @@ public class Rock extends Projectile {
 		drawShape = ((RockShape)this.hitShape).toPolygon();
 		this.angle = angle;
 		this.velocity = Vector.angleVector(angle,BULLET_SPEED);
+		this.velocity.plusEquals(velocity);
 		this.angularVelocity = Math.signum(this.velocity.x)*0.06;
 		this.updateShape();
 		numBreaks = 2;
@@ -104,7 +105,6 @@ public class Rock extends Projectile {
 			Rock newRock = new Rock(location,angle,new RockShape(RockShape.addMidPoints(RockShape.addMidPoints(newArr))),numBreaks,normalLength);
 			newRock.velocity.minusEquals(normal);
 			this.map.projectileQueue.add(newRock);
-			//Make the new rock. 
 			
 			currentPoint--;
 			newShapePoints = 2 + (int)(Math.random() * 4); //Generating another random  set of points for the next new shape. 

@@ -8,7 +8,7 @@ import java.awt.event.KeyListener;
  *
  */
 public class KeyHandler implements KeyListener {
-	public boolean rightKey,leftKey,spaceKey,fKey,eKey,qKey,rKey,aKey,dKey;
+	public boolean rightKey,leftKey,spaceKey,fKey,eKey,qKey,rKey,aKey,dKey, xKey,zKey;
 	public void keyPressed(KeyEvent e) {
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) {
 			rightKey = true;
@@ -36,6 +36,12 @@ public class KeyHandler implements KeyListener {
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_D) {
 			dKey = true;
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_X) {
+			xKey = true;
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_Z) {
+			zKey = true;
 		}
 		
 	}
@@ -75,6 +81,12 @@ public class KeyHandler implements KeyListener {
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_D) {
 			dKey = false;
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_X) {
+			xKey = false;
+		}
+		else if(e.getKeyCode() == KeyEvent.VK_Z) {
+			zKey = false;
 		}
 		
 	}

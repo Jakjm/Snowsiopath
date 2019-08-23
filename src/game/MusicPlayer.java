@@ -6,11 +6,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.DataLine;
+import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.Mixer;
 import javax.sound.sampled.SourceDataLine;
@@ -48,7 +50,8 @@ public class MusicPlayer{
 	private volatile long position;
 	/**The thread being used during playback**/
 	private Thread playThread;
-	
+	private static ArrayList<MusicPlayer> playerList = new ArrayList<MusicPlayer>();
+	private static float volumeSetting = Float.MIN_VALUE;
 	
 	/**
 	 * Constructs the MusicPlayer using an <b>external</b> file.
@@ -62,6 +65,21 @@ public class MusicPlayer{
 			e.printStackTrace();
 		}
 		setupMusicPlayer(stream);
+	}
+	public static void setAllVolume(float volume) {
+		volumeSetting = volume;
+		for(MusicPlayer player : playerList) {
+			if(player != null)player.setVolume(volumeSetting);
+		}
+	}
+	public void setVolume(float volume) {
+		FloatControl gain = (FloatControl)line.getControl(FloatControl.Type.MASTER_GAIN);
+		try {
+			gain.setValue(-50+volume);
+		}
+		catch(IllegalArgumentException e) {
+			
+		}
 	}
 	/**
 	 * Constructs the MusicPlayer using an <b>internal</b> path.<br>
@@ -109,6 +127,8 @@ public class MusicPlayer{
 				System.out.println("Broken! " + format);
 			}
 			bufferSize = line.getBufferSize();
+			playerList.add(this);
+			if(volumeSetting != Float.MIN_VALUE)this.setVolume(volumeSetting);
 	}
 	public void setMode(int mode) {
 		this.mode = mode;
