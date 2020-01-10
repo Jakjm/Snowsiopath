@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import game.backgroundMusic.BackgroundMusic;
 import gameObjects.Map;
@@ -41,8 +42,8 @@ public class Game extends JPanel {
 	private static final Font FPS_FONT = new Font(Font.SERIF,Font.PLAIN,16);
 	/** The current framerate **/
 	private double frameRate;
-	public static final int SCREEN_SIZE_X = 1200;
-	public static final int SCREEN_SIZE_Y = 700;
+	public static final int SCREEN_SIZE_X = 800;
+	public static final int SCREEN_SIZE_Y = 600;
 	public BufferedImage gameImage;
 	public Graphics2D gameGraphics;
 	public volatile boolean drawComplete = true;
@@ -145,6 +146,10 @@ public class Game extends JPanel {
 				loadThread.start();
 			}
 			else {
+				String msg = "Use the directional keys or WSAD to move\n" 
+						+ "Use Space to jump, and Q and E to flip!\n"
+						+ "Press F to fire, and R to reload. You can switch weapons with the W key!";
+				JOptionPane.showMessageDialog(null,msg);
 				
 			}
 		}
@@ -159,7 +164,7 @@ public class Game extends JPanel {
 		}
 	}
 	public void initGame() {
-		gameMusic = new BackgroundMusic("Klaww.wav","Stadium Ruins.wav");
+		gameMusic = new BackgroundMusic("rockSmash.wav","Klaww.wav","Stadium Ruins.wav");
 		Rock.loadRocks();
 		Shotgun.loadGun();
 		map = new MapOne();
@@ -202,13 +207,12 @@ public class Game extends JPanel {
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 	}
 	public void updateGame() {
-		drawGame();
+		
 		player.getKeys(keyHandler,map);
 		player.update(map);
 		map.updateProjectiles();
 	}
 	public void drawGame() {
-		drawComplete = false;
 		updateOffset();
 		gameGraphics.setColor(Color.white);
 		gameGraphics.fillRect(0, 0,SCREEN_SIZE_X,SCREEN_SIZE_Y);
@@ -221,10 +225,12 @@ public class Game extends JPanel {
 		player.draw(gameGraphics,offset);
 		
 		drawFps(gameGraphics);
-		drawComplete = true;
 	}
 	public void paintComponent(Graphics g) {
-		if(drawComplete)g.drawImage(gameImage,0,0,null);
+		drawGame();
+		if(drawComplete) {
+			g.drawImage(gameImage,0,0,null);
+		}
 	}
 	public class KeyManager extends KeyHandler {
 		public void onWKeyPressed() {

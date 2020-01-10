@@ -7,7 +7,7 @@ import geometry.Vector;
 
 public abstract class SolidObject extends MovingObject {
 	protected Shape hitShape;
-	public boolean drawHitshape = false;
+	public static volatile boolean drawHitshape = false;
 	public SolidObject(Vector location,Vector center,Shape hitShape) {
 		super(location,center);
 		this.hitShape = hitShape;

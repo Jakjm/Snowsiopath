@@ -45,9 +45,7 @@ public class Wand extends ProjectileLauncher<Rock>{
 		if(!super.fireBullet()) {
 			return;
 		}
-		for(int i = 3;i <= 3;i++) {
-			createRock(map,velocity,i/32.0 * Math.PI);
-		}
+	    createRock(map,velocity,5/32.0 * Math.PI);
 		
 		if(this.facingRight) this.angle = -Math.PI / 4;
 		else this.angle = Math.PI / 4;

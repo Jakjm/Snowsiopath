@@ -2,6 +2,8 @@ package game;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import gameObjects.SolidObject;
+
 /**
  * 
  * @author jordan
@@ -42,6 +44,9 @@ public class KeyHandler implements KeyListener {
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_Z) {
 			zKey = true;
+		}
+		else if(spaceKey && e.getKeyCode() == KeyEvent.VK_9) {
+		
 		}
 		
 	}
@@ -87,6 +92,9 @@ public class KeyHandler implements KeyListener {
 		}
 		else if(e.getKeyCode() == KeyEvent.VK_Z) {
 			zKey = false;
+		}
+		else if(spaceKey && e.getKeyCode() == KeyEvent.VK_9) {
+			SolidObject.drawHitshape = !SolidObject.drawHitshape;
 		}
 		
 	}

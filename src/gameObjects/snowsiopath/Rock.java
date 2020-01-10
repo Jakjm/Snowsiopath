@@ -15,7 +15,7 @@ import geometry.Vector;
 public class Rock extends Projectile {
 	public Polygon drawShape;
 	int numBreaks;
-	public static final int NUM_POINTS = 14;
+	public static final int NUM_POINTS = 10;
 	public static final int BASE_RADIUS = 65;
 	private static final double RANGE = 1200;
 	private static final double DEBRIS_RANGE = 800;
