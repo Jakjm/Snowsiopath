@@ -34,7 +34,9 @@ public class Player extends ReversibleObject{
     
     /**The location of the weapon hand. **/
     public Vector handLocation;
+    /**The current weapon in use.*/
     public Weapon weapon;
+    /*The list of weapons, and the index within the weapon list.*/
     public ArrayList<Weapon> weaponList;
     public int weaponIndex = 0;
 	public Player(Vector location) {
@@ -45,6 +47,10 @@ public class Player extends ReversibleObject{
 		weaponList.add(new Wand(location));
 		weapon = weaponList.get(0);
 	}
+	/**
+	 * Defining the player shape through a combination of portions of the shape.
+	 * @return the shape of the player.
+	 */
 	public static Shape playerShape() {
 		Line faceRight = new Line(30,Line.DOWN,new Vector(60,0));
 		Line faceLeft = new Line(30,Line.UP,new Vector(20,0));
@@ -91,15 +97,13 @@ public class Player extends ReversibleObject{
 		}
 	}
 	public void jump() {
-		if(!onGround) {
+		if(!onGround || flipping) {
 			return;
 		}
 		velocity.y -= JUMP_STRENGTH;
-		
-		flipping = true;
 	}
 	public void halfBack() {
-		if(!onGround) {
+		if(!onGround || flipping) {
 			return;
 		}
 		velocity.y -= JUMP_STRENGTH;
@@ -112,7 +116,7 @@ public class Player extends ReversibleObject{
 		flipStart = this.angle;
 	}
 	public void half() {
-		if(!onGround) {
+		if(!onGround || flipping) {
 			return;
 		}
 		velocity.y -= JUMP_STRENGTH;
@@ -125,7 +129,7 @@ public class Player extends ReversibleObject{
 		flipStart = this.angle;
 	}
 	public void flip() {
-		if(!onGround) {
+		if(!onGround || flipping) {
 			return;
 		}
 		velocity.y -= JUMP_STRENGTH*1.25;
@@ -136,7 +140,7 @@ public class Player extends ReversibleObject{
 		flipStart = this.angle;
 	}
 	public void backflip() {
-		if(!onGround) {
+		if(!onGround || flipping) {
 			return;
 		}
 		velocity.y -= JUMP_STRENGTH*1.25;
@@ -165,6 +169,7 @@ public class Player extends ReversibleObject{
     				//On ground is when the vertical normal force is greater than the horizontal.
     				this.onGround = applyNormalForce2(data);
     			}
+    			this.location.plusEquals(wall.velocity);
     			super.updateShape();
     		}
     	}
@@ -215,16 +220,15 @@ public class Player extends ReversibleObject{
     	updateWalls(map);
     	updateWeapon(map);
     	
-    	
+    	//Correct the flip when the snowman touches down. 
     	if(onGround) {
-	    	if(angle > flipStart + flipRange) {
-	    		angle = flipStart + flipRange;
-	    		angularVelocity = 0;
-	    	}
-	    	else if(angle < flipStart - flipRange) {
-	    		angle = flipStart - flipRange;
-	    		angularVelocity = 0;
-	    	}
+    		angularVelocity = 0;
+    		if(flipping) {
+    			//Flip range is either PI or 2PI, so this is fine:
+    			angle = flipStart + flipRange; 
+	    		flipRange = 0.0;
+	    		flipping = false;
+    		}
     	}
     }
     public void draw(Graphics2D g,Vector offset) {

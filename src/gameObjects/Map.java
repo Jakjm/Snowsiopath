@@ -8,6 +8,7 @@ import gameObjects.snowsiopath.Projectile;
 import geometry.Vector;
 public abstract class Map {
 	public LinkedList<Wall>wallList;
+	public LinkedList<MovingPlatform> movingPlatforms;
 	public LinkedList<Projectile> bulletList; 
 	public LinkedList<Projectile> projectileQueue;
 	public static final double GRAVITY = 1;
@@ -16,6 +17,7 @@ public abstract class Map {
 		wallList = new LinkedList<Wall>();
 		bulletList = new LinkedList<Projectile>();
 		projectileQueue = new LinkedList<Projectile>();
+		movingPlatforms = new LinkedList<MovingPlatform>();
 	}
 	public Map(int mapWidth,int mapHeight) {
 		this();
@@ -27,6 +29,11 @@ public abstract class Map {
 		wallList.add(rightWall);
 		Wall topWall = new Wall(new Vector(WALL_THICKNESS,0),mapWidth,WALL_THICKNESS,Color.green);
 		wallList.add(topWall);
+	}
+	public void updatePlatforms() {
+		for(MovingPlatform p : movingPlatforms) {
+			p.update();
+		}
 	}
 	public void updateProjectiles() {
 		ListIterator<Projectile> bulletIterator = bulletList.listIterator();

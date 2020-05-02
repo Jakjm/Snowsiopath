@@ -12,6 +12,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -35,7 +36,7 @@ public class Game extends JPanel {
 	Player player;
 	public Vector offset;
 	/** The maximum number of times per second the game is drawn **/
-	private static final double MAX_FR = 60.00; 
+	private static final double MAX_FR = 61.00; 
 	/** The maximum number of microseconds between draws **/
 	private static final double DRAW_DELAY = (Math.pow(10, 6) / MAX_FR);
 	/** The font of the game panel **/
@@ -46,7 +47,7 @@ public class Game extends JPanel {
 	public static final int SCREEN_SIZE_Y = 600;
 	public BufferedImage gameImage;
 	public Graphics2D gameGraphics;
-	public volatile boolean drawComplete = true;
+	public ReentrantLock imageLock = new ReentrantLock(true);
 	BackgroundMusic gameMusic;
 	
 	public JPanel backPanel;
@@ -79,19 +80,8 @@ public class Game extends JPanel {
 		switchToMenu();
 		gameFrame.setVisible(true);
 		
-		
-		
-		
-		
 		keyHandler = new KeyManager();
 		gameFrame.addKeyListener(keyHandler);
-
-		
-		//gameFrame.setContentPane(this);
-		
-		
-		//initGame();
-		//loop();
 	}
 	public void switchToGame() {
 		gameFrame.setSize(SCREEN_SIZE_X,SCREEN_SIZE_Y);
@@ -183,8 +173,9 @@ public class Game extends JPanel {
 			long currentTime = microseconds();
 			if(currentTime - lastPaintTime >= DRAW_DELAY) {
 				updateGame();
+				drawGame();
 				this.repaint();
-				frameRate = Math.pow(10, 6)/(currentTime-lastPaintTime);
+				frameRate = 1000000.0 /(currentTime-lastPaintTime);
 				lastPaintTime = currentTime;
 			}
 		}
@@ -207,12 +198,14 @@ public class Game extends JPanel {
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 	}
 	public void updateGame() {
-		
+		map.updatePlatforms();
 		player.getKeys(keyHandler,map);
 		player.update(map);
 		map.updateProjectiles();
 	}
 	public void drawGame() {
+		imageLock.lock();
+		
 		updateOffset();
 		gameGraphics.setColor(Color.white);
 		gameGraphics.fillRect(0, 0,SCREEN_SIZE_X,SCREEN_SIZE_Y);
@@ -225,12 +218,13 @@ public class Game extends JPanel {
 		player.draw(gameGraphics,offset);
 		
 		drawFps(gameGraphics);
+		
+		imageLock.unlock();
 	}
 	public void paintComponent(Graphics g) {
-		drawGame();
-		if(drawComplete) {
-			g.drawImage(gameImage,0,0,null);
-		}
+		imageLock.lock();
+		g.drawImage(gameImage,0,0,null);
+		imageLock.unlock();
 	}
 	public class KeyManager extends KeyHandler {
 		public void onWKeyPressed() {
